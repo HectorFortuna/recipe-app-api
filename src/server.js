@@ -3,9 +3,12 @@ import { ENV } from "./config/env.js";
 import { db } from "./config/db.js";
 import { favouritesTable } from "./db/schema.js";
 import { and, eq } from "drizzle-orm";
+import job from "./jobs/cron.js";
 
 const app = express();
 const PORT = ENV.PORT;
+
+if (ENV.NODE_ENV === "production") job.start();
 
 app.use(express.json());
 
@@ -44,7 +47,7 @@ app.get("/api/favourites/:userId", async (req, res) => {
         
         const userFavourites = await db.select().from(favouritesTable).where(eq(favouritesTable.userId, userId));
         res.status(200).json(userFavourites);
-        
+
     } catch (error) {
         console.error("Error fetching favourites:", error);
         res.status(500).json({ error: "Internal server error" });
